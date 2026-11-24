@@ -41,6 +41,11 @@
         "Keywords": "morse;cw;ham;radio;"
       }
     },
+    "win": {
+      "target": [
+        "portable"
+      ]
+    },
     "rpm": {
       "artifactName": "morse-trainer-${version}.${arch}.${ext}",
       "fpm": [
