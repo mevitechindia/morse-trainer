@@ -24,6 +24,10 @@ jobs:
         run: npx electron-builder --win
 
       - if: matrix.os == 'ubuntu-latest'
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: latest
+      - if: matrix.os == 'ubuntu-latest'
         run: |
           docker run --rm \
             -v "$(pwd)":/project \
