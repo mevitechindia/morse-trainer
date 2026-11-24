@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>Morse Trainer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">·−</span> Morse Trainer</div>
+    <nav class="tabs">
+      <button class="tab" data-tab="receive">Receive</button>
+      <button class="tab" data-tab="send">Send</button>
+      <button class="tab" data-tab="rhythm">Rhythm</button>
+      <button class="tab" data-tab="free">Free roam</button>
+      <button class="tab" data-tab="exam">Exam mode</button>
+      <button class="tab" data-tab="reference">Reference</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+    <div class="quick">
+      <label class="wpm">
+        <span>Speed</span>
+        <input type="range" id="hdr-wpm" min="5" max="40" step="1" />
+        <b id="hdr-wpm-val">8</b><small>WPM</small>
+        <small id="hdr-eff" class="muted"></small>
+      </label>
+      <select id="hdr-keymode" title="Key mode">
+        <option value="straight">Straight key</option>
+        <option value="iambicA">Paddle · Iambic A</option>
+        <option value="iambicB">Paddle · Iambic B</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <!-- RECEIVE -->
+    <section class="panel" id="panel-receive">
+      <div class="panel-head">
+        <h2>Receive training</h2>
+        <p class="muted">Listen to the code and type what you hear. Prosigns can be typed as <code>&lt;AR&gt;</code> or their symbol (<code>+</code>).</p>
+      </div>
+      <div class="toolbar">
+        <button id="rx-new" class="primary">New text</button>
+        <button id="rx-play">▶ Replay</button>
+        <button id="rx-stop">■ Stop</button>
+        <button id="rx-reveal">Reveal</button>
+        <span class="spacer"></span>
+        <div class="content-chips"></div>
+      </div>
+      <div class="hints">
+        <span class="hints-label">Hints</span>
+        <label><input type="checkbox" data-hint="rxShowText" /> Show characters as they play</label>
+        <label><input type="checkbox" data-hint="rxShowMorse" /> Show dits &amp; dahs as they play</label>
+        <label><input type="checkbox" data-hint="rxGlossary" /> Explain Q codes &amp; abbreviations after checking</label>
+      </div>
+      <div id="rx-hint" class="tokens hint-box"></div>
+      <textarea id="rx-answer" rows="3" placeholder="Type what you hear…  (Ctrl+Enter to check)" spellcheck="false"></textarea>
+      <div class="toolbar">
+        <button id="rx-check" class="primary">Check</button>
+        <span class="spacer"></span>
+        <span id="rx-weak" class="weak muted"></span>
+      </div>
+      <div id="rx-result"></div>
+      <div id="rx-glossary" class="glossary"></div>
+    </section>
+
+    <!-- SEND -->
+    <section class="panel" id="panel-send">
+      <div class="panel-head">
+        <h2>Send training</h2>
+        <p class="muted">Key the text below with your <span class="key-desc"></span>. <kbd>Backspace</kbd> or 8 dits (<code>&lt;HH&gt;</code>) undoes the last character.</p>
+      </div>
+      <div class="toolbar">
+        <button id="tx-new" class="primary">New text</button>
+        <button id="tx-listen">▶ Listen</button>
+        <button id="tx-stop">■ Stop</button>
+        <button id="tx-restart">Restart</button>
+        <span class="spacer"></span>
+        <div class="content-chips"></div>
+      </div>
+      <div class="hints">
+        <span class="hints-label">Hints</span>
+        <label><input type="checkbox" data-hint="txShowNext" /> Show code for the next character</label>
+        <label><input type="checkbox" data-hint="txShowAll" /> Show code under every character</label>
+        <label><input type="checkbox" data-hint="txListenFirst" /> Play each new text before I send</label>
+      </div>
+      <div id="tx-target" class="tokens target"></div>
+      <div class="keying">
+        <div class="lamp" title="Key down"></div>
+        <div class="live-el"></div>
+        <div class="copy-box" id="tx-copy"></div>
+        <div class="pad"></div>
+      </div>
+      <div class="toolbar">
+        <span class="spacer"></span>
+        <span id="tx-weak" class="weak muted"></span>
+      </div>
+      <div id="tx-result"></div>
+    </section>
+
+    <!-- RHYTHM -->
+    <section class="panel" id="panel-rhythm">
+      <div class="panel-head">
+        <h2>Rhythm training</h2>
+        <p class="muted">Match the exact spacing of standard Morse. Everything is measured in <b>units</b> (one dit). Your attempt is analysed automatically after a pause.</p>
+      </div>
+      <div class="timing-legend" id="rh-legend"></div>
+      <div class="toolbar">
+        <label class="inline">Practise
+          <select id="rh-unit">
+            <option value="char">Single character</option>
+            <option value="word">Word</option>
+            <option value="phrase">Phrase / sentence</option>
+          </select>
+        </label>
+        <button id="rh-new" class="primary">New</button>
+        <button id="rh-play">▶ Play reference</button>
+        <button id="rh-reset">Try again</button>
+        <button id="rh-analyze">Analyse now</button>
+        <span class="spacer"></span>
+        <label><input type="checkbox" data-hint="rhShowIdeal" /> Show ideal timeline (hint)</label>
+      </div>
+      <div class="rh-target" id="rh-target"></div>
+      <canvas id="rh-canvas" height="190"></canvas>
+      <div class="keying">
+        <div class="lamp"></div>
+        <div class="live-el"></div>
+        <div class="copy-box small" id="rh-status"></div>
+        <div class="pad"></div>
+      </div>
+      <div id="rh-result"></div>
+    </section>
+
+    <!-- FREE ROAM -->
+    <section class="panel" id="panel-free">
+      <div class="panel-head">
+        <h2>Free roam</h2>
+        <p class="muted">Send anything and watch it transcribed, or copy an endless stream of code.</p>
+      </div>
+      <div class="grid2">
+        <div class="card" id="fr-send-card" tabindex="-1">
+          <div class="card-head">
+            <h3>Send → transcribe</h3>
+            <span class="muted" id="fr-speed"></span>
+          </div>
+          <p class="muted small">Click here, then key with your <span class="key-desc"></span>.</p>
+          <div class="keying column">
+            <div class="row"><div class="lamp"></div><div class="live-el"></div></div>
+            <div class="copy-box big" id="fr-copy"></div>
+            <div class="toolbar">
+              <button id="fr-clear">Clear</button>
+              <button id="fr-copybtn">Copy text</button>
+              <button id="fr-space">Add space</button>
+              <span class="spacer"></span>
+              <div class="pad"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h3>Receive → type</h3>
+            <span class="muted" id="fr-live-acc"></span>
+          </div>
+          <div class="toolbar">
+            <button id="fr-start" class="primary">▶ Start stream</button>
+            <button id="fr-stop">■ Stop</button>
+            <button id="fr-check">Check</button>
+          </div>
+          <div class="content-chips"></div>
+          <label class="small"><input type="checkbox" data-hint="frShowPlayed" /> Show the text as it plays (hint)</label>
+          <div id="fr-played" class="played"></div>
+          <textarea id="fr-type" rows="4" placeholder="Type along as you hear it…" spellcheck="false"></textarea>
+          <div id="fr-result"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Text → Morse</h3></div>
+        <div class="row gap">
+          <textarea id="fr-text" rows="2" placeholder="Type any text, e.g. CQ CQ DE VU2ABC K" spellcheck="false"></textarea>
+          <div class="column">
+            <button id="fr-text-play" class="primary">▶ Play</button>
+            <button id="fr-text-stop">■ Stop</button>
+          </div>
+        </div>
+        <div id="fr-text-morse" class="morse-out"></div>
+      </div>
+    </section>
+
+    <!-- EXAM MODE -->
+    <section class="panel" id="panel-exam">
+      <div class="panel-head">
+        <h2>Exam mode</h2>
+        <p class="muted">Morse test practice based on the Indian amateur radio exam: two tests, each <b>5 minutes at 8 WPM</b>. To pass a test you need at least <b>1 continuous minute without any error</b>. Hints are off during a test. Always check the current WPC rules for the exact exam format.</p>
+      </div>
+
+      <div id="ex-setup">
+        <div class="row gap wrap ex-options">
+          <label class="inline">Text
+            <select id="ex-style">
+              <option value="plain">Plain English</option>
+              <option value="mixed">Plain English with numbers &amp; punctuation</option>
+              <option value="ham">Ham messages (call signs, Q codes, RST)</option>
+            </select>
+          </label>
+          <label class="inline">Length
+            <select id="ex-length">
+              <option value="300">5 minutes (exam)</option>
+              <option value="180">3 minutes (practice)</option>
+              <option value="120">2 minutes (practice)</option>
+            </select>
+          </label>
+          <label class="inline small"><input type="checkbox" id="ex-spacing" /> Count word-spacing mistakes as errors when sending</label>
+        </div>
+        <div class="grid2">
+          <div class="card ex-card">
+            <h3>Receiving test</h3>
+            <p class="muted small">The app sends code at 8 WPM. Type what you hear as you go. Your score is the longest stretch you copied without a single mistake. Each test opens with an unscored <b>VVV</b> so your audio is warmed up; the clock starts after it.</p>
+            <button id="ex-start-rx" class="primary">Start receiving test</button>
+          </div>
+          <div class="card ex-card">
+            <h3>Sending test</h3>
+            <p class="muted small">Key the text shown at 8 WPM with your <span class="key-desc"></span>. The clock starts on your first key-down. Wrong characters and error signals (8 dits or <kbd>Backspace</kbd>) count as errors. Your error-free minute must be sent at <b>8 WPM or faster</b>, measured the standard (PARIS) way.</p>
+            <button id="ex-start-tx" class="primary">Start sending test</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="ex-run" hidden>
+        <div class="ex-bar">
+          <div class="ex-title" id="ex-run-title"></div>
+          <div class="ex-clock" id="ex-clock">5:00</div>
+          <div class="ex-clean">Clean run <b id="ex-live-run">0:00</b></div>
+          <span class="spacer"></span>
+          <button id="ex-finish">Finish now</button>
+          <button id="ex-abort">Abort</button>
+        </div>
+        <div class="ex-progress"><div id="ex-progress-fill"></div></div>
+
+        <div id="ex-rx-area" hidden>
+          <textarea id="ex-rx-type" rows="7" placeholder="Type what you hear…" spellcheck="false"></textarea>
+        </div>
+
+        <div id="ex-tx-area" hidden>
+          <div id="ex-tx-target" class="tokens target ex-target"></div>
+          <div class="keying">
+            <div class="lamp"></div>
+            <div class="live-el"></div>
+            <div class="copy-box" id="ex-tx-copy"></div>
+            <div class="pad"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ex-result"></div>
+
+      <div class="card ex-history">
+        <div class="card-head"><h3>Your attempts</h3><button id="ex-clear-history">Clear</button></div>
+        <div id="ex-history"></div>
+      </div>
+    </section>
+
+    <!-- REFERENCE -->
+    <section class="panel" id="panel-reference">
+      <div class="panel-head row">
+        <h2>Reference</h2>
+        <span class="spacer"></span>
+        <input type="search" id="ref-search" placeholder="Search codes, meanings…" />
+      </div>
+      <nav class="subtabs">
+        <button class="subtab active" data-ref="chart">Morse chart</button>
+        <button class="subtab" data-ref="qcodes">Q codes</button>
+        <button class="subtab" data-ref="abbr">Abbreviations</button>
+        <button class="subtab" data-ref="prosigns">Prosigns &amp; cut numbers</button>
+        <button class="subtab" data-ref="timing">Timing &amp; RST</button>
+        <button class="subtab" data-ref="qso">Sample QSO</button>
+      </nav>
+      <div id="ref-body"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="panel" id="panel-settings">
+      <div class="panel-head"><h2>Settings</h2></div>
+      <div class="settings-grid">
+        <div class="card">
+          <h3>Speed</h3>
+          <label class="field">Character speed (WPM)
+            <input type="number" id="set-wpm" min="5" max="50" />
+          </label>
+          <label class="field check"><input type="checkbox" id="set-farnsworth" /> Farnsworth spacing (extra gaps between characters &amp; words)</label>
+          <label class="field">Effective speed (WPM)
+            <input type="number" id="set-eff" min="2" max="50" />
+          </label>
+          <p class="muted small" id="set-timing"></p>
+        </div>
+        <div class="card">
+          <h3>Audio</h3>
+          <label class="field">Tone (Hz) <b id="set-freq-val"></b>
+            <input type="range" id="set-freq" min="300" max="1200" step="10" />
+          </label>
+          <label class="field">Volume <b id="set-vol-val"></b>
+            <input type="range" id="set-vol" min="0" max="1" step="0.01" />
+          </label>
+          <label class="field check"><input type="checkbox" id="set-sidetone" /> Sidetone while keying</label>
+          <label class="field check"><input type="checkbox" id="set-keepawake" /> Keep audio output awake</label>
+          <p class="muted small">Plays an inaudible signal (about −80 dBFS) so Bluetooth, USB and power-saving audio devices don't fall asleep and clip the start of the code. Turn it off if you'd rather your audio device can sleep, e.g. to save headphone battery.</p>
+          <button id="set-test">Test tone</button>
+        </div>
+        <div class="card">
+          <h3>Key</h3>
+          <label class="field">Mode
+            <select id="set-keymode">
+              <option value="straight">Straight key (single key — you time every element)</option>
+              <option value="iambicA">Iambic paddle — Mode A</option>
+              <option value="iambicB">Iambic paddle — Mode B</option>
+            </select>
+          </label>
+          <div class="bind-row" data-mode="straight">
+            <span>Straight key</span><kbd id="bind-straight"></kbd><button data-bind="straight">Change</button>
+          </div>
+          <div class="bind-row" data-mode="paddle">
+            <span>Dit paddle</span><kbd id="bind-dit"></kbd><button data-bind="dit">Change</button>
+          </div>
+          <div class="bind-row" data-mode="paddle">
+            <span>Dah paddle</span><kbd id="bind-dah"></kbd><button data-bind="dah">Change</button>
+          </div>
+          <label class="field check" data-mode="paddle"><input type="checkbox" id="set-swap" /> Swap paddles</label>
+          <label class="field check" data-mode="straight"><input type="checkbox" id="set-adaptive" /> Adapt decoder to my actual speed</label>
+          <p class="muted small">Tip: USB paddle adapters (e.g. ones that emulate Ctrl keys) work — just bind whatever key they send. You can also click the on-screen key; in paddle mode the left button is dit and the right button is dah.</p>
+        </div>
+        <div class="card">
+          <h3>Decoder</h3>
+          <label class="field check"><input type="checkbox" id="set-prosign" /> Show prosigns (<code>&lt;AR&gt;</code>, <code>&lt;BT&gt;</code>, <code>&lt;KN&gt;</code>…) instead of + = (</label>
+          <label class="field check"><input type="checkbox" id="set-errbs" /> 8+ dits = error, delete last character</label>
+        </div>
+        <div class="card wide">
+          <h3>Practice text</h3>
+          <div class="content-chips"></div>
+          <div class="row gap wrap">
+            <label class="field">Items per exercise <input type="number" id="set-count" min="1" max="60" /></label>
+            <label class="field">Random group length <input type="number" id="set-group" min="1" max="10" /></label>
+            <label class="field grow">Custom character set for random groups (blank = use content toggles)
+              <input type="text" id="set-chars" placeholder="e.g. KMRSUAPTLO" spellcheck="false" />
+            </label>
+          </div>
+          <div class="row gap">
+            <button id="set-reset-stats">Reset character statistics</button>
+            <button id="set-reset-all">Restore default settings</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/morse.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/keyer.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/exam.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
