@@ -3,7 +3,7 @@
   "productName": "Morse Trainer",
   "version": "1.2.3",
   "description": "Desktop Morse code trainer: sending, receiving, rhythm and free-roam practice with ham radio Q codes and abbreviations.",
-  "author": "Avoiq",
+  "author": "Avoiq Private Limited",
   "main": "main.js",
   "private": true,
   "scripts": {
@@ -31,7 +31,7 @@
       ],
       "icon": "build/icon.png",
       "category": "Education",
-      "maintainer": "Avoiq",
+      "maintainer": "Avoiq Private Limited",
       "synopsis": "Morse code trainer for ham radio operators",
       "description": "Desktop Morse code trainer: sending, receiving, rhythm and free-roam practice with ham radio Q codes and abbreviations.",
       "executableName": "morse-trainer",
