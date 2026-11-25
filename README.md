@@ -33,7 +33,7 @@ The renderer (`src/`) is plain static HTML/CSS/JS with no build step, so the sam
 
 Deployed to Cloudflare Pages as the `morse-trainer` project (production branch `main`): <https://morse-trainer-43a.pages.dev>.
 
-Publishing a GitHub release deploys the site automatically via [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) (pre-releases are skipped). The workflow needs the `CLOUDFLARE_API_TOKEN` (Cloudflare Pages · Edit) and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
+Publishing a release deploys the site automatically via [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml): it runs when the *Build and Release* workflow completes successfully on a release tag (the release is published with the workflow's `GITHUB_TOKEN`, whose events cannot trigger a second workflow, so the deploy hangs off the build instead). Pre-release tags like `v2.0.0-rc1` are skipped. The workflow needs the `CLOUDFLARE_API_TOKEN` (Cloudflare Pages · Edit) and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
 
 To redeploy the site manually after changing `src/`, use Wrangler's direct upload:
 

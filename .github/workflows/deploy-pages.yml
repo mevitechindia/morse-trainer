@@ -1,23 +1,38 @@
 name: Deploy Web to Cloudflare Pages
 
-# Deploys the web app (src/) to the morse-trainer Cloudflare Pages project
-# when a GitHub release is published (the desktop workflow creates releases
-# from v* tags). Pre-releases do not update the production site.
+# Deploys the web app (src/) to the morse-trainer Cloudflare Pages project.
+#
+# The Build and Release workflow publishes GitHub releases using the job's
+# GITHUB_TOKEN, and events caused by GITHUB_TOKEN do not trigger other
+# workflows — so `on: release: published` would never fire here. Instead this
+# runs when the Build and Release workflow completes successfully on a
+# release tag (that workflow only triggers on v* tags). Pre-release tags
+# (v2.0.0-rc1 — anything with a hyphen) do not update the production site.
+#
+# Can also be run manually: gh workflow run "Deploy Web to Cloudflare Pages" --ref <tag>
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Build and Release"]
+    types: [completed]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ !github.event.release.prerelease }}
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        (github.event.workflow_run.conclusion == 'success' &&
+         !contains(github.event.workflow_run.head_branch, '-'))
+      }}
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          # The exact commit the release was built from (or the manual ref).
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
       - name: Sanity check the web app
         run: |
