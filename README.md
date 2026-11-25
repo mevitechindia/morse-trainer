@@ -33,7 +33,9 @@ The renderer (`src/`) is plain static HTML/CSS/JS with no build step, so the sam
 
 Deployed to Cloudflare Pages as the `morse-trainer` project (production branch `main`): <https://morse-trainer-43a.pages.dev>.
 
-To redeploy the site after changing `src/`, use Wrangler's direct upload:
+Publishing a GitHub release deploys the site automatically via [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) (pre-releases are skipped). The workflow needs the `CLOUDFLARE_API_TOKEN` (Cloudflare Pages · Edit) and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
+
+To redeploy the site manually after changing `src/`, use Wrangler's direct upload:
 
 ```bash
 npx wrangler pages deploy src --project-name morse-trainer --branch main

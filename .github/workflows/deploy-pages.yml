@@ -1,0 +1,32 @@
+name: Deploy Web to Cloudflare Pages
+
+# Deploys the web app (src/) to the morse-trainer Cloudflare Pages project
+# when a GitHub release is published (the desktop workflow creates releases
+# from v* tags). Pre-releases do not update the production site.
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.release.prerelease }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Sanity check the web app
+        run: |
+          test -f src/index.html
+          test -f src/manifest.webmanifest
+
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '3'
+          command: pages deploy src --project-name=morse-trainer --branch=main
