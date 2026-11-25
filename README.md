@@ -71,7 +71,7 @@ The icon comes from `build/icon.png`. Run `npm run icon` to regenerate it.
 Install on Fedora:
 
 ```bash
-sudo dnf install ./morse-trainer-1.2.3.x86_64.rpm
+sudo dnf install ./morse-trainer-1.3.0.x86_64.rpm
 ```
 
 The app appears in the GNOME menu as **Morse Trainer**, or you can run `morse-trainer` from a terminal. To remove it, run `sudo dnf remove morse-trainer`.

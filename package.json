@@ -1,7 +1,7 @@
 {
   "name": "morse-trainer",
   "productName": "Morse Trainer",
-  "version": "1.2.3",
+  "version": "1.3.0",
   "description": "Desktop Morse code trainer: sending, receiving, rhythm and free-roam practice with ham radio Q codes and abbreviations.",
   "author": "Avoiq Private Limited",
   "main": "main.js",
