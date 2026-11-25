@@ -11,7 +11,7 @@ npm install
 npm start
 ```
 
-Web app: serve `src/` from any static host (or just open `src/index.html`). A web deployment is live on Cloudflare Pages.
+Web app: serve `src/` from any static host (or just open `src/index.html`). A web deployment is live on Cloudflare Pages at <https://morse-trainer-43a.pages.dev>.
 
 ## Features
 
@@ -31,12 +31,15 @@ Settings and statistics are saved in the app's local storage.
 
 The renderer (`src/`) is plain static HTML/CSS/JS with no build step, so the same code runs on the web. In the browser, audio starts on your first click or key press (standard autoplay policy).
 
-To deploy to Cloudflare Pages (direct upload of `src/`):
+Deployed to Cloudflare Pages as the `morse-trainer` project (production branch `main`): <https://morse-trainer-43a.pages.dev>.
+
+To redeploy the site after changing `src/`, use Wrangler's direct upload:
 
 ```bash
-cf pages projects create morse-trainer --production-branch main
-cf pages projects deployments create morse-trainer --pages-build-output-dir src --branch main
+npx wrangler pages deploy src --project-name morse-trainer --branch main
 ```
+
+(`cf pages projects create --name <name> --production-branch main` created the project; the `cf` CLI cannot do the Pages asset upload itself, so Wrangler handles the upload step.)
 
 ## Files
 
