@@ -18,7 +18,7 @@ Web app: serve `src/` from any static host (or just open `src/index.html`). A we
 - **Speed**: character WPM in the top bar (default 8), optional Farnsworth spacing in Settings.
 - **Receive**: listen and type; colour-coded diff, accuracy, weakest-character stats. Hints: show characters and/or dits & dahs as they play, plus explanations of Q codes and abbreviations.
 - **Send**: key the shown text; per-character right/wrong marking, word-spacing errors, element and overall speed. Hints: code for the next character or every character, and listening to the text first. Backspace or 8 dits undoes.
-- **Rhythm**: ideal timeline vs. your keyed timeline in units, per-element stats (dit, dah, element, letter and word gaps), a score and tips.
+- **Rhythm**: ideal timeline vs. your keyed timeline in units, per-element stats (dit, dah, element, letter and word gaps), a score and tips. An optional timing cursor sweeps the timeline at the ideal pace while you key, so you can check your speed against the target as you send.
 - **Free roam**: live transcription of whatever you send; an endless receive stream to type along with; text-to-Morse player.
 - **Exam mode**: practice based on the Indian amateur radio Morse test. It has a 5-minute receiving test and a 5-minute sending test at 8 WPM, and each passes with at least one continuous minute without errors. When sending, that error-free minute must also be at 8 WPM or faster, measured the standard (PARIS) way. You can choose plain English, text with numbers and punctuation, or ham messages, plus shorter practice lengths. It shows a timeline of errors and your attempt history.
 - **Reference**: clickable Morse chart, Q codes, abbreviations, prosigns, cut numbers, timing, RST and a sample QSO.

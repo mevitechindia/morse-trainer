@@ -486,7 +486,8 @@
     let marks = [];
     let analysis = null;
     let finishTimer = null;
-    let cursor = null; // { startAt, total }
+    let cursor = null; // { startAt, total, keying } — moving "now" line on the timeline
+    let cursorRaf = null;
 
     function t() { return MT.standardTiming(S.wpm); }
 
@@ -539,11 +540,14 @@
 
     function reset() {
       clearTimeout(finishTimer);
+      cursor = null;
       keyer.reset();
       marks = [];
       analysis = null;
       res.innerHTML = '';
-      status.textContent = 'Key the target when ready — timing starts at your first key-down.';
+      status.textContent = S.hints.rhCursor
+        ? 'Key the target when ready — timing starts at your first key-down. The moving line marks the ideal pace.'
+        : 'Key the target when ready — timing starts at your first key-down.';
       renderTarget();
       draw();
     }
@@ -565,6 +569,7 @@
     function analyze() {
       clearTimeout(finishTimer);
       if (marks.length === 0) return;
+      if (cursor && cursor.keying) cursor = null; // attempt over — freeze the view for the analysis
       const segs = userSegs();
       const dots = segs.filter((s) => s.kind === 'dot').map((s) => s.dur);
       const dashes = segs.filter((s) => s.kind === 'dash').map((s) => s.dur);
@@ -747,27 +752,40 @@
       g.fillStyle = C('--muted');
       g.fillText(`grid = 1 unit (${Math.round(u)} ms)`, W - 150, 14);
 
-      if (cursor) {
+      if (cursor && (!cursor.keying || S.hints.rhCursor)) {
         const el = performance.now() - cursor.startAt;
         if (el >= 0 && el <= cursor.total) {
           const px = left + el * sx;
+          const y1 = cursor.keying ? yU + bh + 8 : yI + bh + 8;
           g.strokeStyle = C('--accent');
           g.lineWidth = 2;
-          g.beginPath(); g.moveTo(px, yI - 8); g.lineTo(px, yI + bh + 8); g.stroke();
+          g.beginPath(); g.moveTo(px, yI - 8); g.lineTo(px, y1); g.stroke();
         }
       }
     }
 
+    // A moving line on the canvas that tracks elapsed time. During reference playback it
+    // follows the audio; while you key it sweeps at the ideal pace starting from your
+    // first key-down, so you can see whether your marks run ahead of or behind the ideal.
+    function startCursorLoop() {
+      // Replace any pending frame (e.g. one orphaned while the window was hidden).
+      if (cursorRaf !== null) cancelAnimationFrame(cursorRaf);
+      const loop = () => {
+        cursorRaf = null;
+        if (!cursor) return;
+        if (cursor.keying && !S.hints.rhCursor) { cursor = null; draw(); return; }
+        const el = performance.now() - cursor.startAt;
+        draw();
+        if (el <= cursor.total) cursorRaf = requestAnimationFrame(loop);
+      };
+      cursorRaf = requestAnimationFrame(loop);
+    }
+
     function playRef() {
       if (!text) return;
-      const { sch, handle } = play(text, { onEnd: () => { cursor = null; draw(); } }, t());
-      cursor = { startAt: handle.startAt, total: sch.total };
-      const loop = () => {
-        if (!cursor) return;
-        draw();
-        requestAnimationFrame(loop);
-      };
-      requestAnimationFrame(loop);
+      const { sch, handle } = play(text, { onEnd: () => { if (cursor && !cursor.keying) { cursor = null; draw(); } } }, t());
+      cursor = { startAt: handle.startAt, total: sch.total, keying: false };
+      startCursorLoop();
     }
 
     function onKeyer(type, d) {
@@ -776,6 +794,12 @@
           marks = [];
           analysis = null;
           res.innerHTML = '';
+        }
+        if (S.hints.rhCursor && !marks.length && ideal && ideal.total > 0) {
+          // First key-down of a fresh attempt: sweep at the ideal pace from this instant.
+          // d.t is also the origin of the "You" lane, so the line stays comparable to it.
+          cursor = { startAt: d.t, total: ideal.total, keying: true };
+          startCursorLoop();
         }
         clearTimeout(finishTimer);
         status.textContent = 'Recording…';
@@ -798,14 +822,29 @@
 
     return {
       onKeyer,
-      refresh() { renderTarget(); draw(); },
+      refresh() {
+        renderTarget();
+        // Hint re-enabled mid-attempt: resume the pace line from the attempt's start.
+        if (S.hints.rhCursor && ideal && !analysis && marks.length && !cursor) {
+          cursor = { startAt: marks[0].start, total: ideal.total, keying: true };
+          startCursorLoop();
+        }
+        draw();
+      },
       enter() {
         legend();
         if (!text) newTarget();
         else { buildIdeal(); renderTarget(); draw(); }
       },
       leave() { clearTimeout(finishTimer); cursor = null; },
-      onSpeed() { legend(); if (text) { buildIdeal(); draw(); } },
+      onSpeed() {
+        legend();
+        if (text) {
+          buildIdeal();
+          if (cursor && cursor.keying) cursor.total = ideal.total;
+          draw();
+        }
+      },
     };
   })();
 

@@ -31,7 +31,7 @@
     hints: {
       rxShowText: false, rxShowMorse: false, rxGlossary: true,
       txShowNext: true, txShowAll: false, txListenFirst: false,
-      rhShowIdeal: true,
+      rhShowIdeal: true, rhCursor: true,
       frShowPlayed: false,
     },
   };
