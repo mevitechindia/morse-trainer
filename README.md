@@ -1,13 +1,17 @@
 # Morse Trainer
 
-Desktop Morse code trainer built with Electron (no build step: plain HTML/CSS/JS).
+Morse code trainer built with plain HTML/CSS/JS. Runs as a desktop app (Electron) and as a web app (no build step either way).
 
 ## Run
+
+Desktop app:
 
 ```bash
 npm install
 npm start
 ```
+
+Web app: serve `src/` from any static host (or just open `src/index.html`). A web deployment is live on Cloudflare Pages.
 
 ## Features
 
@@ -22,6 +26,17 @@ npm start
 - **Practice content**: letters, numbers, punctuation, words, Q codes, abbreviations, call signs, prosigns and QSO phrases, mixed as you choose, plus a custom character set.
 
 Settings and statistics are saved in the app's local storage.
+
+## Web version
+
+The renderer (`src/`) is plain static HTML/CSS/JS with no build step, so the same code runs on the web. In the browser, audio starts on your first click or key press (standard autoplay policy).
+
+To deploy to Cloudflare Pages (direct upload of `src/`):
+
+```bash
+cf pages projects create morse-trainer --production-branch main
+cf pages projects deployments create morse-trainer --pages-build-output-dir src --branch main
+```
 
 ## Files
 
